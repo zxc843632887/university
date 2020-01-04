@@ -121,6 +121,19 @@ export const constantRoutes = [
       }
     ]
   },
+  
+  {
+    path: '/address',
+    component: Layout,
+    children: [
+      {
+        path: 'list',
+        name: 'addressList',
+        component: () => import('@/pages/address/List'),
+        meta: { title: '地址管理', icon: 'user' }
+      }
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
