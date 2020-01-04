@@ -109,6 +109,18 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/comment',
+    component: Layout,
+    children: [
+      {
+        path: 'list',
+        name: 'commentList',
+        component: () => import('@/pages/comment/List'),
+        meta: { title: '评论管理', icon: 'user' }
+      }
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
