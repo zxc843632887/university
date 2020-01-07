@@ -7,9 +7,13 @@
             <el-table-column prop="id" label="编号"></el-table-column>
             <el-table-column prop="name" label="栏目名"></el-table-column>
             <el-table-column prop="num" label="号码"></el-table-column>
-            <el-table-column prop="icon" label="描述"></el-table-column>
-            <el-table-column prop="parentId" label="父编号"></el-table-column>
             
+            <el-table-column prop="parentId" label="父编号"></el-table-column>
+            <el-table-column width="200" prop="icon" label="图标">
+                <template   slot-scope="scope">            
+                      <img :src="scope.row.icon"  min-width="70" height="70" />
+                </template>   
+            </el-table-column>
 
             <el-table-column fixed="right" label="操作">
                 <template v-slot="slot">

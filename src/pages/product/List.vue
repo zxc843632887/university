@@ -8,18 +8,18 @@
             <el-table-column prop="name" label="产品名称"></el-table-column>
             <el-table-column prop="price" label="价格"></el-table-column>
             <el-table-column prop="description" label="描述"></el-table-column>
-            <el-table-column prop="categoryId" label="所属产品"></el-table-column>
+            <el-table-column prop="categoryId" label="所属栏目"></el-table-column>
             <el-table-column prop="status" label="状态"></el-table-column>
             <el-table-column width="200" prop="photo" label="产品照片">
                 <template   slot-scope="scope">            
                       <img :src="scope.row.photo"  min-width="70" height="70" />
                 </template>   
             </el-table-column>
-
+         
             <el-table-column fixed="right" label="操作">
                 <template v-slot="slot">
                     <a href="" @click.prevent="toDeleteHandler(slot.row.id)">删除</a>
-                    <a href="" @click.prevent="toUpdateHandler">修改</a>
+                    <a href="" @click.prevent="toUpdateHandler(slot.row)">修改</a>
                 </template>
             </el-table-column>
         </el-table>
@@ -29,9 +29,7 @@
         <el-dialog  :title="title" :visible.sync="visible" width="60%">
             {{form}}
             <el-form :model="form" labei-width="80px"> 
-               <el-form-item label="编号">       
-                 <el-input v-model="form.id"></el-input>
-               </el-form-item>
+               
                <el-form-item label="产品名称">       
                  <el-input type="name" v-model="form.name"></el-input>
                </el-form-item>
@@ -41,9 +39,23 @@
                <el-form-item label="描述">       
                  <el-input v-model="form.description"></el-input>
                </el-form-item>
-               <el-form-item label="所属产品">       
-                 <el-input v-model="form.categoryId"></el-input>
-               </el-form-item>     
+               <el-form-item label="所属栏目">       
+                 <el-select v-model="form.categoryId">
+                     <el-option v-for="item in options" :key="item.id" :label="item.name" :value="item.id">                        
+                     </el-option>
+                 </el-select>
+               </el-form-item>  
+               <el-form-item label="照片">
+                   <el-upload
+                    class="upload-demo"
+                        action="http://134.175.154.93:6677/file/upload"
+                        :on-success="uploadSuccessHandler"
+                        :file-list="fileList"
+                        list-type="picture">
+                        <el-button size="small" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+                    </el-upload>
+                </el-form-item>    
             </el-form>
 
             <span slot="footer" class="dialog-footer">
@@ -60,6 +72,22 @@ import request from '@/utils/request'
 import querystring from 'querystring'
 export default {
     methods:{
+        uploadSuccessHandler(){
+            
+            let photo="http://134.175.154.93:8888/group1/"+response.data.id
+            //将图片地址设置到form便于一起提交给后台
+            this.form.photo=photo;
+        
+         
+        },
+        loadCategory(){
+            let url = "http://localhost:6677/category/findAll"
+            request.get(url).then((response)=>{
+                // 将查询结果设置到products中，this指向外部函数的this
+                this.options = response.data;
+      })
+    },
+
         loadData(){
             let url="http://localhost:6677/product/findAll"
             request.get(url).then((response)=>{
@@ -95,23 +123,34 @@ export default {
             })
         },
         toAddHendler(){
-            this.title="录入员工信息";
+             this.form={
+                type:"product"
+            }
+            this.title="录入产品信息";
             this.visible=true;
         },
-        toDeleteHandler(id){
+         toDeleteHandler(id){
            this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
             confirmButtonText: '确定',
             cancelButtonText: '取消',
             type: 'warning'
-           }).then(() => {
-            this.$message({
-              type: 'success',
-              message: '删除成功!'+id
-            });
+            }).then(() => {
+                //   调用后台接口完成删除
+                let url="http://localhost:6677/product/deleteById?id="+id;
+                request.get(url).then((response)=>{
+                    // 刷新数据
+                    this.loadData();
+                    // 提示结果
+                    this.$message({
+                        type: 'success',
+                        message: '删除成功!'+id
+                    });
+                })           
            })
         },
-        toUpdateHandler(){
-            this.title="修改员工信息";
+        toUpdateHandler(row){
+            this.form=row;
+            this.title="修改产品信息";
             this.visible=true;
         },
         closeModalHandler(){
@@ -123,20 +162,21 @@ export default {
     },
     data(){
         return{
+           fileList:[],
+           options:[],
            visible:false,
-           product:[{
-              
-           }],
+           product:[],
            form:{
                type:"porduct"
            },
            title:'测试'
            
-
         }    
     },
     created(){
         this.loadData();
+        // 加载栏目信息,用于表中下拉菜单
+        this.loadCategory();
     }
 }
 
